@@ -100,7 +100,9 @@
     .arrow { font-size: 18px; transition: transform .2s; }
     .project:hover .arrow { transform: translate(2px, -2px); }
     .project h3 { margin: auto 0 8px; font: 400 25px/1.1 var(--serif); letter-spacing: -.035em; }
-    .project p { max-width: 270px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+    .project p { max-width: 340px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+    .coming-soon { align-self: flex-start; margin-top: 20px; padding: 7px 10px; border-radius: 2px; background: #e8e9df; color: var(--green); font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
+    .github-link { margin-top: 24px; }
     .contact {
       display: flex; align-items: end; justify-content: space-between; gap: 24px;
       padding: 34px; background: #e8e9df;
@@ -166,26 +168,18 @@
 
       <section class="section" id="work">
         <div class="section-head">
-          <div><div class="section-label">A few things in progress</div><h2>Selected work</h2></div>
+          <div><div class="section-label">What I’m building</div><h2>Projects</h2></div>
           <p class="section-copy">A small collection of experiments, useful tools, and ideas that made it out of my notebook.</p>
         </div>
         <div class="projects">
-          <a class="project" href="https://github.com/CDR615" aria-label="Explore code and experiments on GitHub">
-            <div class="project-top"><span>01 / Code</span><span class="arrow" aria-hidden="true">↗</span></div>
-            <h3>Small experiments</h3>
-            <p>Little ideas, prototypes, and things I’ve been learning along the way.</p>
-          </a>
-          <a class="project" href="#contact">
-            <div class="project-top"><span>02 / Ideas</span><span class="arrow" aria-hidden="true">↗</span></div>
-            <h3>Notes &amp; sketches</h3>
-            <p>Early thoughts and works in progress, collected in one place.</p>
-          </a>
-          <a class="project" href="#contact">
-            <div class="project-top"><span>03 / Next</span><span class="arrow" aria-hidden="true">↗</span></div>
-            <h3>Something new</h3>
-            <p>There’s always another question worth following. More soon.</p>
-          </a>
+          <article class="project" aria-label="JavaScript game, coming soon">
+            <div class="project-top"><span>01 / In development</span><span class="arrow" aria-hidden="true">✳</span></div>
+            <h3>JavaScript Game</h3>
+            <p>A new browser game is in the works. Check back soon to play.</p>
+            <span class="coming-soon">Coming soon</span>
+          </article>
         </div>
+        <a class="button github-link" href="https://github.com/CDR615" target="_blank" rel="noopener noreferrer">Visit my GitHub profile <span aria-hidden="true">↗</span></a>
       </section>
 
       <section class="contact" id="contact">
