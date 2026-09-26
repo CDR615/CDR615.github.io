@@ -43,11 +43,22 @@
     .hero {
       min-height: 610px;
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: 1.1fr .9fr;
       align-items: center;
       gap: 64px;
       padding: 72px 0 88px;
     }
+    .visual { min-height: 360px; display: grid; place-items: center; overflow: hidden; }
+    .ai-network { width: min(100%, 440px); overflow: visible; }
+    .network-ring { fill: none; stroke: #344561; stroke-opacity: .12; stroke-width: 1; }
+    .network-link { fill: none; stroke: #344561; stroke-opacity: .32; stroke-width: 1.5; stroke-dasharray: 5 7; animation: signal 5s linear infinite; }
+    .network-node { fill: #f5f3ed; stroke: #344561; stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: breathe 3s ease-in-out infinite; }
+    .network-node:nth-of-type(2n) { animation-delay: -1.4s; }
+    .network-node:nth-of-type(3n) { animation-delay: -2.2s; }
+    .network-core { fill: #344561; }
+    .network-label { fill: #fff; font: 600 18px ui-sans-serif, system-ui, sans-serif; letter-spacing: 2px; text-anchor: middle; }
+    @keyframes signal { to { stroke-dashoffset: -48; } }
+    @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.22); } }
     .eyebrow, .section-label {
       display: flex; align-items: center; gap: 10px;
       color: var(--green); font-size: 11px; font-weight: 700;
@@ -99,6 +110,7 @@
       nav { gap: 17px; }
       nav a { font-size: 12px; }
       .hero { min-height: auto; grid-template-columns: 1fr; gap: 20px; padding: 82px 0 55px; }
+      .visual { min-height: 280px; }
       .section { padding: 64px 0 72px; }
       .section-head { display: block; }
       .section-copy { margin-top: 18px; }
@@ -106,7 +118,7 @@
       .project { min-height: 190px; }
     }
     @media (max-width: 410px) { nav { gap: 11px; } nav a { font-size: 11px; } .wordmark { font-size: 13px; } }
-    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
   </style>
 </head>
 <body>
@@ -129,6 +141,22 @@
           <div class="actions">
             <a class="button" href="#work">Explore my work <span aria-hidden="true">↘</span></a>
           </div>
+        </div>
+        <div class="visual" aria-hidden="true">
+          <svg class="ai-network" viewBox="0 0 440 360" role="presentation">
+            <ellipse class="network-ring" cx="220" cy="180" rx="183" ry="128" transform="rotate(-22 220 180)" />
+            <ellipse class="network-ring" cx="220" cy="180" rx="145" ry="103" transform="rotate(31 220 180)" />
+            <path class="network-link" d="M220 180 91 101M220 180 342 92M220 180 370 220M220 180 271 316M220 180 88 252M91 101 342 92M342 92 370 220M370 220 271 316M271 316 88 252M88 252 91 101" />
+            <circle class="network-node" cx="91" cy="101" r="8" />
+            <circle class="network-node" cx="342" cy="92" r="7" />
+            <circle class="network-node" cx="370" cy="220" r="9" />
+            <circle class="network-node" cx="271" cy="316" r="7" />
+            <circle class="network-node" cx="88" cy="252" r="8" />
+            <circle class="network-node" cx="155" cy="53" r="5" />
+            <circle class="network-node" cx="183" cy="301" r="5" />
+            <circle class="network-core" cx="220" cy="180" r="47" />
+            <text class="network-label" x="220" y="186">AI</text>
+          </svg>
         </div>
       </section>
 
