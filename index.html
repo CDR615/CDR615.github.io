@@ -236,17 +236,10 @@
         [/\b(?:creative|creativity|artist|artwork|write a|compose)\b/i, ['AI can generate novel combinations, but people still bring intention, context, and judgment. What do you think makes something creative?', 'Does using AI change who you see as the author, or does it depend on how the work is made?']],
         [/\b(?:future|next ten years|where is ai going|future of ai)\b/i, ['The future of AI will depend on technical progress and the choices people make about its use. What outcome would you most hope to see?', 'Which possibility seems more important to you: new capabilities, stronger safeguards, or broader access?']],
         [/\b(?:use|useful|help me|application|everyday|school|education|healthcare|medicine)\b/i, ['AI can help with tasks like summarizing, translation, pattern detection, and brainstorming, but it needs oversight in high-stakes settings. Where do you see it being most useful?', 'What would make an AI tool genuinely helpful in that situation?']],
-        [/\bI (?:think|believe|feel)\s+(.+)/i, ['What leads you to think {0}?', 'What experiences have shaped your view that {0}?']],
-        [/\bI (?:worry|wonder|hope)\s+(.+)/i, ['What makes you {verb} about {0}?', 'Why does {0} stand out to you?']],
-        [/\b(?:because)\b/i, ['Is that the main reason you see it that way?', 'What other factors might be involved?']],
-        [/\b(?:yes|yeah|yep)\b/i, ['What makes you agree with that?', 'Can you give an example that comes to mind?']],
-        [/\b(?:no|nope)\b/i, ['What would be a better way to describe your view?', 'What part do you see differently?']],
-        [/\?$/, ['What do you think the answer might be?', 'What makes you ask that about AI?']],
-        [/\b(?:you|your)\b/i, ['I’m a rule-based program, so I don’t have personal beliefs. What is your own take on AI?', 'I can offer scripted prompts, but I don’t have experiences. What perspective are you bringing to this?']]
+        [/\b(?:artificial intelligence|ai|algorithm(?:s|ic)?|robot(?:ics|s)?|automation|technology)\b/i, ['You mentioned AI. Are you most interested in how it works, how people use it, or its effects on society?', 'There are many ways to approach AI. Would you like to talk about its capabilities, limitations, or impact?']]
       ];
-      const fallbacks = ['Which part of AI does that connect to for you?', 'What example of AI comes to mind?', 'How do you think that could affect people?', 'Can you say more about what you think AI should do in that situation?'];
+      const fallback = 'I’m not sure how to respond to that. Please ask me a different question about AI, such as how machine learning works, what generative AI can do, or how AI affects society.';
       let lastReply = '';
-      let lastVerb = 'wonder';
 
       function choose(replies, match) {
         const options = replies.filter((reply) => reply !== lastReply);
@@ -254,9 +247,7 @@
         lastReply = reply;
         if (!match || !match[1]) return reply;
         const detail = match[1].trim().replace(/[.!?]+$/, '').toLowerCase();
-        const verb = match[0].match(/\b(worry|wonder|hope)/i);
-        if (verb) lastVerb = verb[1].toLowerCase();
-        return reply.replace('{0}', detail).replace('{verb}', lastVerb);
+        return reply.replace('{0}', detail);
       }
 
       function respond(text) {
@@ -264,7 +255,8 @@
           const match = text.match(pattern);
           if (match) return choose(replies, match);
         }
-        return choose(fallbacks);
+        lastReply = fallback;
+        return fallback;
       }
 
       function addMessage(text, speaker) {
@@ -297,7 +289,6 @@
       clearButton.addEventListener('click', () => {
         transcript.replaceChildren();
         lastReply = '';
-        lastVerb = 'wonder';
         addMessage(opening, 'bot');
         input.focus();
       });
