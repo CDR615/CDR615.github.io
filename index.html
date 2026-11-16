@@ -108,6 +108,9 @@
     .chat-status { display: inline-flex; align-items: center; gap: 7px; }
     .chat-status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #718b6d; }
     .chat-clear { padding: 4px 0; border: 0; background: transparent; color: var(--muted); font: inherit; text-decoration: underline; cursor: pointer; }
+    .chat-prompts { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 12px; }
+    .chat-prompt { padding: 7px 10px; border: 1px solid var(--line); border-radius: 2px; background: transparent; color: var(--green); font: 11px var(--sans); cursor: pointer; }
+    .chat-prompt:hover, .chat-prompt:focus-visible { border-color: var(--green); background: #e9ece6; }
     .chat-window { display: flex; flex-direction: column; gap: 12px; height: 300px; overflow-y: auto; padding: 16px; border: 1px solid var(--line); background: #faf9f5; }
     .chat-message { max-width: min(86%, 520px); margin: 0; padding: 10px 12px; border-radius: 3px; font-size: 12px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
     .chat-message.bot { align-self: flex-start; background: #e9ece6; color: var(--ink); }
@@ -185,10 +188,15 @@
           <article class="project chat-project" aria-labelledby="chat-title">
             <div class="project-top"><span>01 / Interactive experiment</span></div>
             <h3 id="chat-title">A Listening Machine</h3>
-            <p class="chat-note">A small, ELIZA-inspired chatbot. Share a thought and see what it asks next.</p>
-            <div class="chat-toolbar"><span class="chat-status">ELIZA-style conversation</span><button class="chat-clear" id="chat-clear" type="button">Clear chat</button></div>
+            <p class="chat-note">An AI-focused, ELIZA-inspired bot. Explore machine learning, generative AI, ethics, and what it means for people.</p>
+            <div class="chat-toolbar"><span class="chat-status">AI conversation · rule-based</span><button class="chat-clear" id="chat-clear" type="button">Clear chat</button></div>
+            <div class="chat-prompts" aria-label="Conversation starters">
+              <button class="chat-prompt" type="button" data-prompt="How does machine learning work?">Machine learning</button>
+              <button class="chat-prompt" type="button" data-prompt="Can AI be creative?">AI and creativity</button>
+              <button class="chat-prompt" type="button" data-prompt="What are the risks of AI?">AI ethics</button>
+            </div>
             <div class="chat-window" id="chat-window" role="log" aria-label="Conversation" aria-live="polite">
-              <p class="chat-message bot">Hello. I’m here to listen. What’s on your mind?</p>
+              <p class="chat-message bot">Hello. What interests you about artificial intelligence?</p>
             </div>
             <form class="chat-form" id="chat-form">
               <label for="chat-input" class="sr-only">Your message</label>
@@ -212,52 +220,47 @@
       const input = document.querySelector('#chat-input');
       const transcript = document.querySelector('#chat-window');
       const clearButton = document.querySelector('#chat-clear');
-      const opening = 'Hello. I’m here to listen. What’s on your mind?';
-      const patterns = [
-        [/\b(?:hello|hi|hey)\b/i, ['Hello. What would you like to talk about?', 'Hi. What is on your mind?']],
-        [/\b(?:sad|unhappy|lonely|down|depressed)\b/i, ['What do you think is contributing to that feeling?', 'How long have you been feeling this way?', 'Would you like to tell me more about what has been difficult?']],
-        [/\b(?:happy|excited|proud|grateful|good)\b/i, ['What about that feels especially good to you?', 'What do you think helped bring that about?']],
-        [/\b(?:angry|mad|frustrated|annoyed)\b/i, ['What do you think is behind that frustration?', 'When did you first notice feeling this way?']],
-        [/\b(?:afraid|scared|anxious|worried|nervous)\b/i, ['What feels most worrying about that?', 'What do you imagine might happen?', 'Has anything helped you feel calmer when this comes up?']],
-        [/\b(?:mother|mom|father|dad|parent|family|brother|sister)\b/i, ['Tell me more about your family.', 'How do you feel about that relationship?']],
-        [/\b(?:friend|friends|relationship|partner|love)\b/i, ['What matters most to you in that relationship?', 'How does that situation affect you?']],
-        [/\b(?:because)\b/i, ['Is that the main reason?', 'What other reasons might there be?']],
-        [/\bI feel\s+(.+)/i, ['What makes you feel {0}?', 'When do you feel {0} most?']],
-        [/\bI am\s+(.+)/i, ['How long have you been {0}?', 'What does being {0} mean to you?']],
-        [/\bI’m\s+(.+)/i, ['How long have you been {0}?', 'What does being {0} mean to you?']],
-        [/\bI want\s+(.+)/i, ['Why do you want {0}?', 'What might change if you got {0}?']],
-        [/\bI need\s+(.+)/i, ['What makes {0} feel important right now?', 'What do you think would happen if you had {0}?']],
-        [/\bI (?:cannot|can’t|can't)\s+(.+)/i, ['What do you think is stopping you from {0}?', 'What might help you {0}?']],
-        [/\bI think\s+(.+)/i, ['What leads you to think {0}?', 'What makes that thought stand out to you?']],
-        [/\bI remember\s+(.+)/i, ['What does remembering {0} bring up for you?', 'What feels important about {0}?']],
-        [/\bmy\s+(.+)/i, ['You mentioned your {0}. Tell me more about that.', 'How do you feel about your {0}?']],
-        [/\b(?:yes|yeah|yep)\b/i, ['You seem sure. What makes you say yes?', 'Can you tell me a little more?']],
-        [/\b(?:no|nope)\b/i, ['Why do you think not?', 'What would feel more accurate to you?']],
-        [/\?$/, ['What do you think the answer might be?', 'What makes you ask that?']],
-        [/\b(?:you|your)\b/i, ['Let’s bring the focus back to you. What does that bring up?', 'What makes you curious about my perspective?']]
+      const promptButtons = document.querySelectorAll('.chat-prompt');
+      const opening = 'Hello. What interests you about artificial intelligence?';
+      const rules = [
+        [/\b(?:hello|hi|hey)\b/i, ['Hello. What part of AI are you curious about?', 'Hi. Shall we talk about how AI works or how it affects people?']],
+        [/\b(?:what is|define|meaning of)\b.*\b(?:artificial intelligence|\bai\b)\b|\b(?:artificial intelligence|\bai\b)\s+(?:mean|is)\b/i, ['AI is a broad field focused on building systems that perform tasks associated with human intelligence. Which part would you like to unpack?', 'People use “AI” to describe many things, from pattern recognition to language models. What example are you thinking of?']],
+        [/\b(?:machine learning|\bml\b|learn(?:ing)? from data|training data)\b/i, ['Machine learning systems find patterns in examples and use them to make predictions or generate outputs. What would you like to know about the process?', 'A model is adjusted during training so its output better fits examples or goals. Are you curious about the data, the model, or how it is evaluated?']],
+        [/\b(?:generative ai|gen ai|生成|create|generate|make)\b.*\b(?:image|text|video|music|content|ai)\b|\b(?:generative ai|gen ai|image generator|language model|llm|chatgpt)\b/i, ['Generative AI produces new text, images, audio, or other outputs based on patterns learned during training. What do you find most interesting about that?', 'Generative models can be useful collaborators, though their outputs still need human judgment. What would you want to create with one?']],
+        [/\b(?:neural network|deep learning|transformer|large language model|\bllm\b)\b/i, ['Neural networks learn layered patterns from data; large language models use those patterns to predict and generate text. Which idea should we explore further?', 'These models can produce fluent answers without reasoning exactly as a person does. What about their inner workings are you wondering about?']],
+        [/\b(?:hallucinat|wrong answer|made.?up|inaccurate|reliable|trustworthy|accuracy)\b/i, ['AI systems can produce confident-sounding errors because generating a plausible answer is not the same as verifying a fact. How do you think people should check AI outputs?', 'Reliability depends on the task, the data, and how the system is used. What kind of AI answer are you thinking about trusting?']],
+        [/\b(?:conscious|sentien|feelings|self.?aware|think like a human|understand)\b/i, ['Fluent conversation alone is not evidence that a system has conscious experience. What would convince you that a machine understands something?', 'That question depends partly on what we mean by understanding or consciousness. What qualities would matter most to you?']],
+        [/\b(?:ethic|bias|fairness|discriminat|responsib|harm|risk|danger)\b/i, ['AI can reflect unfair patterns in its data and can affect people at scale. Who do you think should be responsible for preventing harm?', 'Fairness in AI involves choices about data, goals, and who gets a voice. Which of those concerns you most?']],
+        [/\b(?:privacy|surveillance|data|personal information)\b/i, ['AI tools can rely on large amounts of data, which raises questions about consent, privacy, and control. What boundary would you want in place?', 'Who should decide how personal data can be used to build AI systems?']],
+        [/\b(?:job|workplace|employment|career|replace workers|automation)\b/i, ['AI may change tasks and jobs unevenly: some work is automated, while other work is reshaped. What kind of work do you think should remain distinctly human?', 'The impact on work depends on who controls the tools and how the benefits are shared. What change worries or excites you?']],
+        [/\b(?:creative|creativity|artist|artwork|write a|compose)\b/i, ['AI can generate novel combinations, but people still bring intention, context, and judgment. What do you think makes something creative?', 'Does using AI change who you see as the author, or does it depend on how the work is made?']],
+        [/\b(?:future|next ten years|where is ai going|future of ai)\b/i, ['The future of AI will depend on technical progress and the choices people make about its use. What outcome would you most hope to see?', 'Which possibility seems more important to you: new capabilities, stronger safeguards, or broader access?']],
+        [/\b(?:use|useful|help me|application|everyday|school|education|healthcare|medicine)\b/i, ['AI can help with tasks like summarizing, translation, pattern detection, and brainstorming, but it needs oversight in high-stakes settings. Where do you see it being most useful?', 'What would make an AI tool genuinely helpful in that situation?']],
+        [/\bI (?:think|believe|feel)\s+(.+)/i, ['What leads you to think {0}?', 'What experiences have shaped your view that {0}?']],
+        [/\bI (?:worry|wonder|hope)\s+(.+)/i, ['What makes you {verb} about {0}?', 'Why does {0} stand out to you?']],
+        [/\b(?:because)\b/i, ['Is that the main reason you see it that way?', 'What other factors might be involved?']],
+        [/\b(?:yes|yeah|yep)\b/i, ['What makes you agree with that?', 'Can you give an example that comes to mind?']],
+        [/\b(?:no|nope)\b/i, ['What would be a better way to describe your view?', 'What part do you see differently?']],
+        [/\?$/, ['What do you think the answer might be?', 'What makes you ask that about AI?']],
+        [/\b(?:you|your)\b/i, ['I’m a rule-based program, so I don’t have personal beliefs. What is your own take on AI?', 'I can offer scripted prompts, but I don’t have experiences. What perspective are you bringing to this?']]
       ];
-      const fallbacks = ['Tell me more about that.', 'How does that make you feel?', 'What feels most important about this to you?', 'Can you say a little more about what you mean?'];
-      const reflections = [[/\bI\b/gi, 'you'], [/\bmy\b/gi, 'your'], [/\bme\b/gi, 'you'], [/\bam\b/gi, 'are'], [/\bmyself\b/gi, 'yourself']];
+      const fallbacks = ['Which part of AI does that connect to for you?', 'What example of AI comes to mind?', 'How do you think that could affect people?', 'Can you say more about what you think AI should do in that situation?'];
       let lastReply = '';
-
-      function reflect(text) {
-        return text.trim().replace(/[.!?]+$/, '').split(/\b(I|my|me|am|myself)\b/i).map((part) => {
-          const pair = reflections.find(([pattern]) => pattern.test(part));
-          if (!pair) return part;
-          pair[0].lastIndex = 0;
-          return part.replace(pair[0], pair[1]);
-        }).join('').toLowerCase();
-      }
+      let lastVerb = 'wonder';
 
       function choose(replies, match) {
-        const template = replies.filter((reply) => reply !== lastReply);
-        const reply = (template.length ? template : replies)[Math.floor(Math.random() * (template.length || replies.length))];
+        const options = replies.filter((reply) => reply !== lastReply);
+        const reply = (options.length ? options : replies)[Math.floor(Math.random() * (options.length || replies.length))];
         lastReply = reply;
-        return reply.replace('{0}', match && match[1] ? reflect(match[1]) : 'that');
+        if (!match || !match[1]) return reply;
+        const detail = match[1].trim().replace(/[.!?]+$/, '').toLowerCase();
+        const verb = match[0].match(/\b(worry|wonder|hope)/i);
+        if (verb) lastVerb = verb[1].toLowerCase();
+        return reply.replace('{0}', detail).replace('{verb}', lastVerb);
       }
 
       function respond(text) {
-        for (const [pattern, replies] of patterns) {
+        for (const [pattern, replies] of rules) {
           const match = text.match(pattern);
           if (match) return choose(replies, match);
         }
@@ -272,18 +275,29 @@
         transcript.scrollTop = transcript.scrollHeight;
       }
 
+      function send(text) {
+        const cleaned = text.trim();
+        if (!cleaned) return;
+        addMessage(cleaned, 'user');
+        addMessage(respond(cleaned), 'bot');
+      }
+
       form.addEventListener('submit', (event) => {
         event.preventDefault();
-        const text = input.value.trim();
-        if (!text) return;
-        addMessage(text, 'user');
-        addMessage(respond(text), 'bot');
+        send(input.value);
         input.value = '';
         input.focus();
       });
 
+      promptButtons.forEach((button) => button.addEventListener('click', () => {
+        send(button.dataset.prompt);
+        input.focus();
+      }));
+
       clearButton.addEventListener('click', () => {
         transcript.replaceChildren();
+        lastReply = '';
+        lastVerb = 'wonder';
         addMessage(opening, 'bot');
         input.focus();
       });
