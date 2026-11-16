@@ -87,7 +87,7 @@
     .section-head { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 34px; }
     h2 { margin: 15px 0 0; font: 400 clamp(36px, 4.5vw, 54px)/1.05 var(--serif); letter-spacing: -.055em; }
     .section-copy { max-width: 330px; color: var(--muted); font-size: 13px; line-height: 1.7; }
-    .projects { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .projects { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
     .project {
       min-height: 225px; padding: 23px; display: flex; flex-direction: column;
       border: 1px solid var(--line); text-decoration: none;
@@ -101,6 +101,23 @@
     .project p { max-width: 340px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
     .coming-soon { align-self: flex-start; margin-top: 20px; padding: 7px 10px; border-radius: 2px; background: #e8e9df; color: var(--green); font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
     .github-link { margin-top: 24px; }
+    .chat-project { min-height: 0; max-width: 760px; }
+    .chat-project h3 { margin: 38px 0 8px; }
+    .chat-note { margin-bottom: 18px !important; }
+    .chat-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; color: var(--muted); font-size: 11px; }
+    .chat-status { display: inline-flex; align-items: center; gap: 7px; }
+    .chat-status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #718b6d; }
+    .chat-clear { padding: 4px 0; border: 0; background: transparent; color: var(--muted); font: inherit; text-decoration: underline; cursor: pointer; }
+    .chat-window { display: flex; flex-direction: column; gap: 12px; height: 300px; overflow-y: auto; padding: 16px; border: 1px solid var(--line); background: #faf9f5; }
+    .chat-message { max-width: min(86%, 520px); margin: 0; padding: 10px 12px; border-radius: 3px; font-size: 12px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .chat-message.bot { align-self: flex-start; background: #e9ece6; color: var(--ink); }
+    .chat-message.user { align-self: flex-end; background: var(--green); color: white; }
+    .chat-form { display: flex; gap: 8px; margin-top: 10px; }
+    .chat-input { min-width: 0; flex: 1; padding: 12px; border: 1px solid var(--line); border-radius: 2px; background: white; color: var(--ink); font: 13px var(--sans); }
+    .chat-input:focus { outline: 2px solid var(--green); outline-offset: 2px; }
+    .chat-send { padding: 0 18px; border: 0; border-radius: 2px; background: var(--green); color: white; font: 600 12px var(--sans); cursor: pointer; }
+    .chat-send:hover { background: #28374d; }
+    .chat-hint { margin-top: 9px !important; font-size: 11px !important; }
     footer { display: flex; justify-content: space-between; gap: 20px; padding: 25px 0 32px; color: var(--muted); font-size: 11px; }
     footer a { text-decoration: none; }
     footer a:hover { color: var(--ink); }
@@ -165,11 +182,20 @@
           <div><div class="section-label">What I’m building</div><h2>Projects</h2></div>
         </div>
         <div class="projects">
-          <article class="project" aria-label="JavaScript game, coming soon">
-            <div class="project-top"><span>01 / In development</span></div>
-            <h3>JavaScript Game</h3>
-            <p>A new browser game is in the works. Check back soon to play.</p>
-            <span class="coming-soon">Coming soon</span>
+          <article class="project chat-project" aria-labelledby="chat-title">
+            <div class="project-top"><span>01 / Interactive experiment</span></div>
+            <h3 id="chat-title">A Listening Machine</h3>
+            <p class="chat-note">A small, ELIZA-inspired chatbot. Share a thought and see what it asks next.</p>
+            <div class="chat-toolbar"><span class="chat-status">ELIZA-style conversation</span><button class="chat-clear" id="chat-clear" type="button">Clear chat</button></div>
+            <div class="chat-window" id="chat-window" role="log" aria-label="Conversation" aria-live="polite">
+              <p class="chat-message bot">Hello. I’m here to listen. What’s on your mind?</p>
+            </div>
+            <form class="chat-form" id="chat-form">
+              <label for="chat-input" class="sr-only">Your message</label>
+              <input class="chat-input" id="chat-input" name="message" type="text" placeholder="Type a message…" autocomplete="off" required>
+              <button class="chat-send" type="submit">Send</button>
+            </form>
+            <p class="chat-hint">This bot uses scripted rules; it doesn’t understand or store your messages.</p>
           </article>
         </div>
         <a class="button github-link" href="https://github.com/CDR615" target="_blank" rel="noopener noreferrer">Visit my GitHub profile <span aria-hidden="true">↗</span></a>
@@ -179,5 +205,89 @@
 
     <footer><span>© 2026 Connor Del Rossi</span><a href="#top">Back to top ↑</a></footer>
   </div>
+  <style>.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }</style>
+  <script>
+    (() => {
+      const form = document.querySelector('#chat-form');
+      const input = document.querySelector('#chat-input');
+      const transcript = document.querySelector('#chat-window');
+      const clearButton = document.querySelector('#chat-clear');
+      const opening = 'Hello. I’m here to listen. What’s on your mind?';
+      const patterns = [
+        [/\b(?:hello|hi|hey)\b/i, ['Hello. What would you like to talk about?', 'Hi. What is on your mind?']],
+        [/\b(?:sad|unhappy|lonely|down|depressed)\b/i, ['What do you think is contributing to that feeling?', 'How long have you been feeling this way?', 'Would you like to tell me more about what has been difficult?']],
+        [/\b(?:happy|excited|proud|grateful|good)\b/i, ['What about that feels especially good to you?', 'What do you think helped bring that about?']],
+        [/\b(?:angry|mad|frustrated|annoyed)\b/i, ['What do you think is behind that frustration?', 'When did you first notice feeling this way?']],
+        [/\b(?:afraid|scared|anxious|worried|nervous)\b/i, ['What feels most worrying about that?', 'What do you imagine might happen?', 'Has anything helped you feel calmer when this comes up?']],
+        [/\b(?:mother|mom|father|dad|parent|family|brother|sister)\b/i, ['Tell me more about your family.', 'How do you feel about that relationship?']],
+        [/\b(?:friend|friends|relationship|partner|love)\b/i, ['What matters most to you in that relationship?', 'How does that situation affect you?']],
+        [/\b(?:because)\b/i, ['Is that the main reason?', 'What other reasons might there be?']],
+        [/\bI feel\s+(.+)/i, ['What makes you feel {0}?', 'When do you feel {0} most?']],
+        [/\bI am\s+(.+)/i, ['How long have you been {0}?', 'What does being {0} mean to you?']],
+        [/\bI’m\s+(.+)/i, ['How long have you been {0}?', 'What does being {0} mean to you?']],
+        [/\bI want\s+(.+)/i, ['Why do you want {0}?', 'What might change if you got {0}?']],
+        [/\bI need\s+(.+)/i, ['What makes {0} feel important right now?', 'What do you think would happen if you had {0}?']],
+        [/\bI can(?:not|’t|\s+can't)\s+(.+)/i, ['What do you think is stopping you from {0}?', 'What might help you {0}?']],
+        [/\bI think\s+(.+)/i, ['What leads you to think {0}?', 'What makes that thought stand out to you?']],
+        [/\bI remember\s+(.+)/i, ['What does remembering {0} bring up for you?', 'What feels important about {0}?']],
+        [/\bmy\s+(.+)/i, ['You mentioned your {0}. Tell me more about that.', 'How do you feel about your {0}?']],
+        [/\b(?:yes|yeah|yep)\b/i, ['You seem sure. What makes you say yes?', 'Can you tell me a little more?']],
+        [/\b(?:no|nope)\b/i, ['Why do you think not?', 'What would feel more accurate to you?']],
+        [/\?$/, ['What do you think the answer might be?', 'What makes you ask that?']],
+        [/\b(?:you|your)\b/i, ['Let’s bring the focus back to you. What does that bring up?', 'What makes you curious about my perspective?']]
+      ];
+      const fallbacks = ['Tell me more about that.', 'How does that make you feel?', 'What feels most important about this to you?', 'Can you say a little more about what you mean?'];
+      const reflections = [[/\bI\b/gi, 'you'], [/\bmy\b/gi, 'your'], [/\bme\b/gi, 'you'], [/\bam\b/gi, 'are'], [/\bmyself\b/gi, 'yourself']];
+      let lastReply = '';
+
+      function reflect(text) {
+        return text.trim().replace(/[.!?]+$/, '').split(/\b(I|my|me|am|myself)\b/i).map((part) => {
+          const pair = reflections.find(([pattern]) => pattern.test(part));
+          if (!pair) return part;
+          pair[0].lastIndex = 0;
+          return part.replace(pair[0], pair[1]);
+        }).join('').toLowerCase();
+      }
+
+      function choose(replies, match) {
+        const template = replies.filter((reply) => reply !== lastReply);
+        const reply = (template.length ? template : replies)[Math.floor(Math.random() * (template.length || replies.length))];
+        lastReply = reply;
+        return reply.replace('{0}', match && match[1] ? reflect(match[1]) : 'that');
+      }
+
+      function respond(text) {
+        for (const [pattern, replies] of patterns) {
+          const match = text.match(pattern);
+          if (match) return choose(replies, match);
+        }
+        return choose(fallbacks);
+      }
+
+      function addMessage(text, speaker) {
+        const message = document.createElement('p');
+        message.className = `chat-message ${speaker}`;
+        message.textContent = text;
+        transcript.append(message);
+        transcript.scrollTop = transcript.scrollHeight;
+      }
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+        addMessage(text, 'user');
+        addMessage(respond(text), 'bot');
+        input.value = '';
+        input.focus();
+      });
+
+      clearButton.addEventListener('click', () => {
+        transcript.replaceChildren();
+        addMessage(opening, 'bot');
+        input.focus();
+      });
+    })();
+  </script>
 </body>
 </html>
