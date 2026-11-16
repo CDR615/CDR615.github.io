@@ -101,6 +101,20 @@
     .project p { max-width: 340px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
     .coming-soon { align-self: flex-start; margin-top: 20px; padding: 7px 10px; border-radius: 2px; background: #e8e9df; color: var(--green); font-size: 10px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; }
     .github-link { margin-top: 24px; }
+    .projects { grid-template-columns: minmax(0, 1fr); }
+    .chat-project { min-height: 0; max-width: 760px; }
+    .chat-project h3 { margin: 38px 0 8px; }
+    .chat-window { display: flex; flex-direction: column; gap: 12px; height: 300px; overflow-y: auto; padding: 16px; border: 1px solid var(--line); background: #faf9f5; }
+    .chat-message { max-width: min(86%, 520px); margin: 0; padding: 10px 12px; border-radius: 3px; font-size: 12px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .chat-message.bot { align-self: flex-start; background: #e9ece6; color: var(--ink); }
+    .chat-message.user { align-self: flex-end; background: var(--green); color: white; }
+    .chat-form { display: flex; gap: 8px; margin-top: 10px; }
+    .chat-input { min-width: 0; flex: 1; padding: 12px; border: 1px solid var(--line); border-radius: 2px; background: white; color: var(--ink); font: 13px var(--sans); }
+    .chat-input:focus { outline: 2px solid var(--green); outline-offset: 2px; }
+    .chat-send { padding: 0 18px; border: 0; border-radius: 2px; background: var(--green); color: white; font: 600 12px var(--sans); cursor: pointer; }
+    .chat-send:hover { background: #28374d; }
+    .chat-hint { margin-top: 9px !important; font-size: 11px !important; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
     footer { display: flex; justify-content: space-between; gap: 20px; padding: 25px 0 32px; color: var(--muted); font-size: 11px; }
     footer a { text-decoration: none; }
     footer a:hover { color: var(--ink); }
@@ -165,11 +179,19 @@
           <div><div class="section-label">What I’m building</div><h2>Projects</h2></div>
         </div>
         <div class="projects">
-          <article class="project" aria-label="JavaScript game, coming soon">
-            <div class="project-top"><span>01 / In development</span></div>
-            <h3>JavaScript Game</h3>
-            <p>A new browser game is in the works. Check back soon to play.</p>
-            <span class="coming-soon">Coming soon</span>
+          <article class="project chat-project" aria-labelledby="chat-title">
+            <div class="project-top"><span>01 / Interactive experiment</span></div>
+            <h3 id="chat-title">Ask me about AI</h3>
+            <p class="chat-note">A simple, rule-based chatbot for conversations about artificial intelligence.</p>
+            <div class="chat-window" id="chat-window" role="log" aria-label="Conversation" aria-live="polite">
+              <p class="chat-message bot">Hello. What would you like to know about AI?</p>
+            </div>
+            <form class="chat-form" id="chat-form">
+              <label for="chat-input" class="sr-only">Your message</label>
+              <input class="chat-input" id="chat-input" name="message" type="text" placeholder="Ask a question about AI…" autocomplete="off" required>
+              <button class="chat-send" type="submit">Send</button>
+            </form>
+            <p class="chat-hint">Replies are selected from scripted rules. Messages stay in this page and aren’t stored.</p>
           </article>
         </div>
         <a class="button github-link" href="https://github.com/CDR615" target="_blank" rel="noopener noreferrer">Visit my GitHub profile <span aria-hidden="true">↗</span></a>
@@ -179,5 +201,61 @@
 
     <footer><span>© 2026 Connor Del Rossi</span><a href="#top">Back to top ↑</a></footer>
   </div>
+  <script>
+    (() => {
+      const form = document.querySelector('#chat-form');
+      const input = document.querySelector('#chat-input');
+      const conversation = document.querySelector('#chat-window');
+      const rules = [
+        [/\b(?:hello|hi|hey)\b/i, ['Hello. What would you like to know about AI?', 'Hi. Which part of AI interests you?']],
+        [/\b(?:what is|define|meaning of)\b.*\b(?:artificial intelligence|ai)\b/i, ['Artificial intelligence is a broad field focused on systems that perform tasks associated with human intelligence. Which part would you like to explore?', 'AI describes many kinds of systems, from pattern recognition to language models. What example are you thinking of?']],
+        [/\b(?:machine learning|\bml\b|training data|learn(?:ing)? from data)\b/i, ['Machine learning systems find patterns in examples and use them to make predictions or generate outputs. What would you like to know about the process?', 'During training, a model is adjusted based on data and a learning objective. Are you curious about the data, the model, or how it is evaluated?']],
+        [/\b(?:generative ai|gen ai|image generator|language model|large language model|\bllm\b|chatgpt)\b/i, ['Generative AI produces text, images, audio, or other outputs based on patterns learned during training. What do you find most interesting about it?', 'Generative AI can help create and revise things, though its output still needs human judgment. What would you like to make with it?']],
+        [/\b(?:neural network|deep learning|transformer|algorithm)\b/i, ['Neural networks learn layered patterns from data, while algorithms describe the steps a system follows. Which idea would you like to unpack?', 'These are some of the building blocks behind modern AI. What part of how they work are you wondering about?']],
+        [/\b(?:hallucinat|wrong answer|made.?up|inaccurate|reliab|trustworthy|accuracy)\b/i, ['AI can produce confident-sounding errors because a plausible answer is not the same as a verified fact. How do you think people should check AI outputs?', 'Reliability depends on the task, the data, and how the system is used. What kind of AI answer are you thinking about trusting?']],
+        [/\b(?:conscious|sentien|self.?aware|feelings|understand|think like a human)\b/i, ['Fluent conversation alone does not show that a system has conscious experience. What would convince you that a machine understands something?', 'That question depends partly on what we mean by understanding or consciousness. What qualities matter most to you?']],
+        [/\b(?:ethic|bias|fairness|discriminat|responsib|harm|risk|danger)\b/i, ['AI can reflect unfair patterns in its data and affect people at scale. Who do you think should be responsible for preventing harm?', 'Fairness in AI involves choices about data, goals, and who gets a voice. Which concern stands out to you?']],
+        [/\b(?:privacy|surveillance|personal information|data)\b/i, ['AI systems can rely on large amounts of data, raising questions about consent, privacy, and control. What boundary would you want in place?', 'Who should decide how personal data can be used to build AI systems?']],
+        [/\b(?:job|workplace|employment|career|replace workers|automation)\b/i, ['AI may change tasks and jobs unevenly: some work is automated, while other work is reshaped. What change concerns or excites you?', 'The impact on work depends on who controls the tools and how benefits are shared. What work should remain distinctly human?']],
+        [/\b(?:creative|creativity|artist|artwork|music generation)\b/i, ['AI can generate novel combinations, but people bring intention, context, and judgment. What do you think makes something creative?', 'Does using AI change who you see as the author, or does it depend on how the work is made?']],
+        [/\b(?:future|next ten years|where is ai going)\b/i, ['AI’s future will depend on technical progress and people’s choices about how to use it. What outcome would you hope to see?', 'Which possibility matters most to you: new capabilities, stronger safeguards, or wider access?']],
+        [/\b(?:artificial intelligence|\bai\b|robot(?:ics|s)?|technology)\b/i, ['You mentioned AI. Are you most interested in how it works, how people use it, or its effects on society?', 'There are many ways to approach AI. Would you like to talk about its capabilities, limitations, or impact?']]
+      ];
+      const fallback = 'I’m not sure how to respond to that. Please ask me a different question about AI, such as how machine learning works, what generative AI can do, or how AI affects society.';
+      let previousReply = '';
+
+      function replyTo(text) {
+        for (const [pattern, replies] of rules) {
+          if (pattern.test(text)) {
+            const options = replies.filter((reply) => reply !== previousReply);
+            const choices = options.length ? options : replies;
+            const reply = choices[Math.floor(Math.random() * choices.length)];
+            previousReply = reply;
+            return reply;
+          }
+        }
+        previousReply = fallback;
+        return fallback;
+      }
+
+      function addMessage(text, speaker) {
+        const message = document.createElement('p');
+        message.className = `chat-message ${speaker}`;
+        message.textContent = text;
+        conversation.append(message);
+        conversation.scrollTop = conversation.scrollHeight;
+      }
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+        addMessage(text, 'user');
+        addMessage(replyTo(text), 'bot');
+        input.value = '';
+        input.focus();
+      });
+    })();
+  </script>
 </body>
 </html>
